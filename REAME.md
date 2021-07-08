@@ -25,71 +25,76 @@ TODO: give a CLI example of each of these
  - TODO
 
 
-## API
+### API
 jFS can be tested on the command line, and directly used by your operating system with syscalls. Process arguments must have keyword identifiers (`KEY=VALUE`). Unknown argument keys are silently ignored. Keys are *not* case sensitive.
 
-### `jfs createfs NUM_BLOCKS= BLOCK_SIZE=256 VOLUME_NAME=disk.jfs NUM_DISKS=1 MIRRORS=1 CHAINS=1 STRIPED=false USER=nobody`
+#### `jfs createfs NUM_BLOCKS= BLOCK_SIZE=256 VOLUME_NAME=disk.jfs NUM_DISKS=1 MIRRORS=1 CHAINS=1 STRIPED=false USER=nobody`
 
 creates a filesystem with NUM_BLOCKS of size BLOCK_SIZE.
 
-### `jfs format DISKS= DISK=... VOLUME_NAME= MIRRORS=1 CHAINS=1 STRIPED=false`
+#### `jfs format DISKS= DISK=... VOLUME_NAME= MIRRORS=1 CHAINS=1 STRIPED=false`
 
 Formats a disk or raid. Aliases: `formatfs`.
 
-### `jfs combine FNAME= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false
+#### `jfs combine FNAME= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false
 
 Saves the disk(s) to a single disk file named FNAME. Aliases: `savefs`.
 
-### `jfs install DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false`
+#### `jfs install DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false`
 
 use an existing disk image(s) and updates the config to remember. Aliases: `openfs`
 
-### `jfs list START=/ RECURSIVE=false DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
+#### `jfs list START=/ RECURSIVE=false DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
 
 list files (and other meta-information) in START. Can list recursively down the filetree, but not across symlinks.
 
-### `jfs remove PATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
+#### `jfs remove PATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
 
 Frees the space used by an inode at PATH. Aliases: `delete`.
 
-### `jfs rename OLDPATH= NEWPATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
+#### `jfs rename OLDPATH= NEWPATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
 
 Renames / moves an inode. Aliases: `move`.
 
-### `jfs put EXTERNAL_FILEPATH= INTERNAL_FILEPATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
+#### `jfs put EXTERNAL_FILEPATH= INTERNAL_FILEPATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
 
 Put (store) Host OS file into the disk. Does not delete external file from host OS filesystem. Aliases: `putexternalfile`
 
-### `jfs get INTERNAL_FILEPATH= EXTERNAL_FILEPATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
+#### `jfs get INTERNAL_FILEPATH= EXTERNAL_FILEPATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
 
 Get disk file, copy from “disk” to host OS file system. Does not unlink internal file from jfs. Aliases: `getexternalfile`
 
-### `jfs user PATH= USER= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false`
+#### `jfs user PATH= USER= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false`
 
 Assigns the file at PATH to USER. Aliases `set_user`.
 
-### `jfs link EXISTING_PATH= NEW_PATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
+#### `jfs link EXISTING_PATH= NEW_PATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
 
-creates a hard link with path NEW_PATH to an inode at EXISTING_PATH.
+Creates a hard link with path NEW_PATH to an inode at EXISTING_PATH.
 
-### `jfs unlink PATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
+#### `jfs unlink PATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
 
-unlinks an inode at PATH.
+Unlinks an inode at PATH.
 
-### `jfs chmod USER_PERMISSIONS= ALL_PERMISSIONS= PATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
+#### `jfs chmod USER_PERMISSIONS= ALL_PERMISSIONS= PATH= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
 
-Change permissions for a file
+Change permissions for a file. *_PERMISSIONS are a single digit number 0-7 with standard UNIX meaning (0=none, 1=only read, 7=read, write, and execute)
 
-### `jfs detect PATH= RECURSIVE=false TRYFIX=false DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
+#### `jfs detect PATH= RECURSIVE=false TRYFIX=false DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
 
+Detect corruption with the parity bit and conditionally correct if a single bit flip.
 
+#### `jfs volume DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false`
 
-other API's
-diskinfo: lists meta in the VCB.
-meta: lists all metadata on a file
+Get data contained in volume control block. Aliases: `volumeinfo`.
+
+#### `jfs attributes PATH= INHERITED=true DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false USER=`
+
+Lists all metadata on a file. Aliases: `meta`, `metadata`.
 
 ### Algorithm
 
+Main
 1. get commmand
 2. get config vars
     1. get all config vars from process arguments
@@ -98,6 +103,36 @@ meta: lists all metadata on a file
     3. maybe add config vars from `~/.jfs_defaults`
 3. run the selected operation with all known variables
     1. operations EXIT(SUCCESS|FAILURE)
+
+### Utils
+
+VCB* get_VCB(DISKINFO* diskinfo);
+
+int8* read_block(int64 block_loc, int16 data_len, DISKSINFO* disksinfo, bool force=0);
+ A. if force==1, just read data section
+ B. otherwise
+    1. raise error if not valid
+    2. read data section and compute parity
+    3. raise error if parity is not correct
+
+ERRNO write_block(int64 block_loc, int16 data_len, int8* data, DISKSINFO* disksinfo);
+// agnostic to volume information (does not update VCB free space or obey reserved sections rule)
+ 1. set valid
+ 2. write to data and compute parity
+ 3. write parity
+
+consts
+typedef struct {
+    char** disks;
+    int8 mirrors;
+    int8 chains;
+    bool striped;
+} DISKSINFO;
+typedef struct {
+    ... all data listed in VCB above
+    (use next higher order size_t int's in most cases)
+} VCB;
+
 
 ## Under the hood
 
@@ -115,6 +150,10 @@ All blocks are structured as `[ valid (1b) | data  (DATA_LEN) | parity (N_PARITY
    - total space: LOC_POW
    - max possible usable space: LOC_POW
    - free usable space: LOC_POW
+   - num files: LOC_POW
+   - num directories: LOC_POW
+   - root block start: LOC_POW
+   - next free block: LOC_POW
    - num reserved sections: 2B
    - reserved sections: ? *
        - start: LOC_POW
@@ -122,11 +161,10 @@ All blocks are structured as `[ valid (1b) | data  (DATA_LEN) | parity (N_PARITY
    - num users: NUM_USR_POW
    - users:
       - name: ?
-   - num files: LOC_POW
-   - num directories: LOC_POW
-   - root block start: LOC_POW
-   - next free block: LOC_POW
- - inodes: N *
+ - master inode table: ? *
+   - absolute path: 0
+   - inode start block: LOC_POW 
+ - inodes: ? *
    - next block (or 0 if just end): LOC_POW
    - num attributes: MAX_ATTRS
    - content: ?
@@ -152,6 +190,7 @@ Code uses bits unless otherwise specified.
 | Key | maxlen | inherited? | extra |
 | --- | ------ | ---------- | ----------- |
 | filename | 0 | `false` | just this file. not full path. |
+| pathto | 0 | `false` | all the directories leading to this inode with trailing `/` |
 | owner | NUM_USR_POW | `false` | `nobody` owns the root |
 | file_size | LOC_POW | `false` | only tabulates size of `filecontents` (not counting attributes) for inodes that store files (not directories or symlinks) |
 | disk_space | LOC_POW | `false` | tabulates in increments of `BLOCK_SIZE` |
