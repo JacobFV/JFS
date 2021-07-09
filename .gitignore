@@ -1,2 +1,6 @@
 requirements.txt
-a.out
+*.out
+*.i
+*.o
+*.exe
+.vscode/
