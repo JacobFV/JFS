@@ -1,12 +1,15 @@
+#ifndef DEF_HEADER
+#define DEF_HEADER 1
+
 #include<stdint.h>
 #include<stdexcept>
 #include<stdlib.h>
+#include<stdbool.h>
 
-struct raidinfo {
-    int8_t mirrors;
-    int8_t chains;
-    int8_t stripes;
-    int8_t num_disks;
-    char* paths;
-};
-typedef struct raidinfo* RAIDINFO;
+typedef int8_t byte;
+typedef int64_t BYTE_LOC;
+typedef int64_t BLOC_LOC;
+typedef int8_t* BLOCK;
+typedef int8_t* BLOC_DATA;
+
+#endif

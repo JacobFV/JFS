@@ -1,9 +1,9 @@
 # jFS
 
-Jacob's file system (jFS) is a file system and jFSS is shell for terminal interface to Jacob's file system. It currently requires an OS-provided filesystem substrate, but a future operating system, jOS, will directly utilize jFS to store data on high throughput jDrives. This OS will be used to run jPhones, jPads, jMacs, and (of course) JavaScript.\*
+Jacob's file system (jFS) is a file system library, CLI, and shell suite. It currently requires an OS-provided filesystem substrate, but a future operating system, jOS, will directly utilize jFS to store data on high throughput jDrives. This OS will be used to run jPhones, jPads, jMacs, and (of course) JavaScript.\*
 
-**If you are a student grader please show this program to Dr. Levine**
-Dr. Levine, this filesystem has all the bells and whistles for assignment 3: permissions, subdirectories, and go language implementation (+ personal additions: mirrors, chains, striping, corruption detection and correction, static library, and operating system CLI intergration)!
+**If you are a student grader please foreward this paragraph to Dr. Levine**
+Dr. Levine, this filesystem has all the bells and whistles for assignment 3: permissions, subdirectories, and go language implementation (+ personal additions: RAID mirrors, chains, and striping, corruption detection and correction, a static library, and operating system CLI intergration)!
 
 ``bash
 jfs example ... # TODO
@@ -11,20 +11,94 @@ jfs example ... # TODO
 
 ## Getting Started
 
-### C
-TODO
+I recommend installation options by their degree of awesomeness (# of 😎's)
 
-### Go
-Only the shell is written in go
-TODO
+### Full System Installation 😎😎😎😎😎
+```bash
+# run this from the project root directory
+sudo sh install.sh
+```
 
-## Functionality
+### Go Shell 😎😎😎😎
+```bash
+# run this from the project root directory
+sh install.sh
+```
 
-TODO: give a CLI example of each of these
- - permissions
- - inherited permissions
- - TODO
+### C Shell 😎😎😎
+```bash
+# run this from the project root directory
+sh install.sh
+```
 
+### CLI 😎😎
+```bash
+# run this from the project root directory
+sh install.sh
+```
+
+### Just library 😎
+```bash
+# run this from the project root directory
+sh install.sh
+```
+
+## Examples
+
+### Shell
+
+```
+TODO shell session
+```
+
+### CLI
+
+```bash
+
+$ jfs create  # TODO CLI examples
+
+$ jfs 
+
+```
+
+```bash
+
+# psuedo-dll usage example
+$ ls
+$ cat program.c
+#include<unistd.h>
+char** args[3] = {"get", "disk=mydisk.jdf", 
+                  "internal_filepath=/path/to/my/file.txt",
+                  "external_filepath=./file.txt"};
+execve("jfs", args, NULL);
+$ gcc program.c; ./program.c # run program.c
+$ ls
+file.txt
+```
+
+### Library
+
+```go
+TODO calling library functions
+```
+
+```c
+TODO calling library functions
+```
+
+## Under the Hood
+
+Give brief conceptual intro
+
+Explain how shells and CLI both call library
+
+## API
+
+TODO: put all backend functions here
+
+### CLI
+
+TODO: put man entry here
 
 ### API
 jFS can be tested on the command line, and directly used by your operating system with syscalls. Process arguments must have keyword identifiers (`KEY=VALUE`). Unknown argument keys are silently ignored. Keys are *not* case sensitive. 
