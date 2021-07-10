@@ -13,34 +13,54 @@ jfs example ... # TODO
 
 I recommend installation options by their degree of awesomeness (# of 😎's)
 
-### Full System Installation 😎😎😎😎😎
+Please run all the following scripts from this project's root directory. These were all tested on Ubuntu 20.04.
+
+### Full System Installation  😎😎😎😎😎
+
 ```bash
-# run this from the project root directory
-sudo sh install.sh
+sudo dev/install.sh --all
 ```
 
-### Go Shell 😎😎😎😎
+### Go Shell  😎😎😎😎
+
 ```bash
-# run this from the project root directory
-sh install.sh
+# install
+sudo dev/install.sh --shell_go
+jfs_shell_go
+
+# just build and run
+dev/compile_shell_go.sh
+./jfs_shell_go
 ```
 
-### C Shell 😎😎😎
+### C Shell  😎😎😎
+
 ```bash
-# run this from the project root directory
-sh install.sh
+# install
+sudo dev/install.sh --shell_c
+jfs_shell_c
+
+# just build and run
+dev/compile_shell_c.sh
+./jfs_shell_c
 ```
 
-### CLI 😎😎
+### CLI  😎😎
+
 ```bash
-# run this from the project root directory
-sh install.sh
+# install
+sudo dev/install.sh --cli
+
+# just build and run
+dev/compile_cli.sh
+./jfs
 ```
 
-### Just library 😎
+### Just library  😎
+
 ```bash
-# run this from the project root directory
-sh install.sh
+# compile only:
+dev/compile_lib.sh
 ```
 
 ## Examples
@@ -79,31 +99,124 @@ file.txt
 ### Library
 
 ```go
-TODO calling library functions
+// TODO using go to call library functions
 ```
 
 ```c
-TODO calling library functions
+// TODO using C to library functions
 ```
 
-## Under the Hood
+## Details
 
-Give brief conceptual intro
+### Library
 
-Explain how shells and CLI both call library
+The jfs library provides core functionality for the shell, CLI, and whatever awsome application you have in mind. Although core library functions explicitly return `error_t` codes, they may mutate arguments. (and some utility functions actually do return structs). Programmers linking jfs will want to include `lib/jfs.c` and may also want to make language-specific translations of the definitions in `lib/def.h`.
 
-## API
+```c
+// lib/jfs.h
 
-TODO: put all backend functions here
+// TODO: put `jfs.h` here
+```
 
 ### CLI
 
-TODO: put man entry here
+Most process invokations require specifying the `.jdf` files (extension not actually necesary) where the volume is located `DISKS= DISK=...`, raid arrangements `MIRRORS=0 CHAINS=1 STRIPED=false` and even more rarely, a user name `USER=`. 
 
-### API
-jFS can be tested on the command line, and directly used by your operating system with syscalls. Process arguments must have keyword identifiers (`KEY=VALUE`). Unknown argument keys are silently ignored. Keys are *not* case sensitive. 
+```
+man jfs
 
-Every CLI endpoint is handled by both a frontend function has access to process arguments to parametrize calls to the mapped backend function. Backend functions do not call frontend funnctions. They also use separate groups of utilities. Backend functions must recieve all parameters (frontend functions supply some default value) which allow them to be linked to by other programs such as the shell jFSS. The backend functions only return error codes. However they may mutate arguments.
+TODO: update this with final policies from jfs.h
+
+NAME
+    jfs - Jacob's File System
+
+SYNOPSIS
+    jfs {TODO: LIST ALL OPTIONS} arg=value...
+
+DESCRIPTION
+    The `jfs` CLI allows directly manipulating Jacob filesystems
+    using the terminal or OS syscalls. Process arguments must have
+    keyword identifiers (`ARG=VALUE`; overlapping names allowed).
+    Unknown argument keys are silently ignored. Keys are not case
+    sensitive. The CLI additionally supplies some default values 
+    using profile information, environment variables, and constants.
+
+
+jfs create NUM_BLOCKS= BLOCK_SIZE=256 VOLUME_NAME=disk DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false
+
+    Creates new disk(s) and then formats a new volume on those disks.
+    Disks are equally sized and ceiling rounded if necesary. 
+    
+    Aliases: `createfs`.
+
+
+jfs format DISKS= DISK=... VOLUME_NAME=disk.jfs BLOCK_SIZE=256 MIRRORS=0 CHAINS=1 STRIPED=false
+
+    Formats disk(s). 
+    
+    Aliases: `formatfs`.
+
+
+jfs combine NEWNAME= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false
+    
+    Combine all the disk(s) to a single disk file named NEWNAME. 
+    
+    Aliases: `savefs`.
+
+
+jfs mount DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false
+
+    Updates the config file to remember what disk configuration
+    is being used.
+    
+    Aliases: `openfs`
+
+
+jfs unmount
+
+    Removes disk configuration information from the config file.
+
+
+jfs list START=/ META=true CONTENTS=false RECURSIVE=false DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    List paths (and optionally meta-information and file contents)
+    starting from `path`. Optionally lists recursively and across
+    symlinks.
+    
+    Aliases: `meta`, `metadata`.
+
+
+jfs remove PATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    Frees the space used by a single inode at PATH. Does not actually
+    unlink the inode (unlinking is usually called after removing).
+    
+
+jfs delete PATH= RECURSIVE=true DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    Removes and unlinks an inode starting from PATH. Optionally
+    deletes recursively and across symlinks.
+
+
+jfs rename OLDPATH= NEWPATH= FIXSYMLINKS=true RECURSIVE=true DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    Renames / moves an inode from OLDPATH to NEWPATH. Optionally fixes
+    symbolic links to newly moved inode. Optionally moves recursively
+    (which allows entire directories to be moved).
+    
+    Aliases: `move`.
+
+
+jfs put_external_file EXTERNAL_FILEPATH= INTERNAL_FILEPATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    Puts (stores) a single file from host OS into the jfs disk.
+    Does not delete external file from host OS filesystem. 
+    
+    Aliases: `put`
+
+I stopped here. Continue by copying and specifying API's from jfs.h
+
+```
 
 **Main:**
 1. get commmand
@@ -112,260 +225,20 @@ Every CLI endpoint is handled by both a frontend function has access to process 
         * `disk` appends to `disks`
     2. maybe add config vars from OS environment
     3. maybe add config vars from `~/.jfs_defaults`
+    4. maybe add constant defaults
 3. format config vars: for each config var:
     A. if it is a number: convert it to an `int64_t`
     B. if it is true or false: convert it to a boolean
     C. otherwise, leave it as a string
-4. run the selected operation with all known variables
+4. run appropriate library function with relevant argument variables
+    * maybe use library utils to build RAIDINFO, RAID, and/or VCB
 5. call `EXIT(SUCCESS)`
-
-#### Create
-
-```bash
-jfs create NUM_BLOCKS= BLOCK_SIZE=256 VOLUME_NAME=disk DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false
-```
-
-Creates new disk(s) and then formats a new volume on those disks. Aliases: `createfs`.
-
-Disks are equally sized and ceiling rounded if necesary.
-
-```c
-error_t create(int64_t num_blocks, int32_t block_size, char* volume_name, RAIDINFO desired_raid_info)
-```
-
-1. create disk files
-2. use backend `format` to format new disk files
-
-#### Format
-
-```bash
-jfs format DISKS= DISK=... VOLUME_NAME=disk.jfs BLOCK_SIZE=256 MIRRORS=0 CHAINS=1 STRIPED=false
-```
-
-Formats disk(s). Aliases: `formatfs`.
-
-```c
-error_t format(int32_t block_size, char* volume_name, RAIDINFO raid_info)
-```
-
-1. use `write_raid` to propperly write 0's to from 0 to `num_blocks*block_size`
-2. write volume control block
-    1. generate VCB in memory with `new_VCB`
-    2. serialize VCB to bytes with `serialize_VCB`
-    3. store byte-serialized VCB on raid with `write_data`
-
-#### Combine
-
-```bash
-jfs combine NEWNAME= DISKS= DISK=... MIRRORS=1 CHAINS=1 STRIPED=false
-```
-Saves the disk(s) to a single disk file named NEWNAME. Aliases: `savefs`.
-
-```c
-error_t combine(char* new_name, RAIDINFO raid_info)
-```
-1. use backend `create` to make a new disk named `NEWNAME`
-2. taking the first disk option in case of mirror discrepenncies, copy all bits raw onto to the new disk. 
-
-#### Mount
-
-```bash
-jfs mount DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false
-```
-
-Updates the config file to remember what disk configuration is being used. Aliases: `openfs`
-
-```c
-error_t mount(RAIDINFO raid_info)
-```
-1. update config file with disk information.
-
-#### Unmount
-
-```bash
-jfs unmount
-```
-
-Removes disk configuration information from the config file.
-
-```c
-error_t unmount()
-```
-1. remove disk information from config file.
-
-#### List
-
-```bash
-jfs list START=/ META=true CONTENTS=false RECURSIVE=false DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
-```
-
-list files (and other meta-information) in the inode located at START. Can list recursively down the filetree, but not across symlinks. Aliases: `meta`, `metadata`.
-
-```c
-error_t list(char* start, int8_t meta, int8_t contents, int8_t recursive, RAIDINFO raid_info)
-```
-1. make sure the user has permission to read the inode at START
-2. print the absolute path of inode
-3. if meta is true: print the attributes of the inode
-4. if contents is true and the inode has a filesize attribute: print the contents of the inode
-5. if the inode at start_path is a directory and recursive is true: use `list` on all inodes in the directory.
-
-#### Remove
-
-```bash
-jfs remove PATH= UNLINK=true DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
-```
-
-Frees the space used by an inode at PATH. By default, also unlinks inode from master inode table. Aliases: `delete`.
-
-**backend remove:**
-1. make sure the user has permission to write to the inode at PATH
-2. edit volume information
-    - increase vcb.free_usable_space
-    - increase vcb.free_blocks
-3. assign all valid bits for the blocks used by the inode at PATH to false
-4. if unlink, also use `unlink` to unlink the path
-
-#### Rename
-
-```bash
-jfs rename OLDPATH= NEWPATH= FIXSYMLINKS=true DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
-```
-
-Renames / moves an inode from OLDPATH to NEWPATH. Aliases: `move`.
-
-**backend rename:**
-1. make sure the user has permission to write to the inodes at OLDPATH and the containing directory of NEWPATH.
-2. for each inode with have a matching prefix pattern as oldpath in the master inode table:
-    1. change path
-    2. if the inode is a directory, rename the paths in its dests field.
-    3. if fixsymlinks is true: rename the paths of all symlinks to this inode
-
-#### Put External File
-
-```bash
-jfs put_external_file EXTERNAL_FILEPATH= INTERNAL_FILEPATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
-```
-
-Put (store) Host OS file into the disk. Does not delete external file from host OS filesystem. Aliases: `put`
-
-**backend put:**
-1. make sure the user has permission to write to the inodes at INTERNAL_FILEPATH
-2. get file at external_path
-3. modify VCB parameters:
-    - 
-
-#### Get External File
-
-```bash
-jfs get_external_file INTERNAL_FILEPATH= EXTERNAL_FILEPATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
-```
-
-Get disk file, copy from “disk” to host OS file system. Does not delete the internal file from jfs. Aliases: `get`
-
-#### Set User
-
-```bash
-jfs set_user PATH= USER= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false
-```
-
-Assigns the file at PATH to USER. Aliases `user`.
-
-#### Link
-
-```bash
-jfs link EXISTING_PATH= NEW_PATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
-```
-
-Creates a hard link with path NEW_PATH to an inode at EXISTING_PATH.
-
-#### Unlink
-
-```bash
-jfs unlink PATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
-```
-
-Unlinks an inode at PATH.
-
-**backend unlink**
-1. make sure the user has permission to write to this file
-2. if the inode has no incoming symlinks:
-    1. remove inode from master inode table
-    2. decrease vcb.total_inodes
-    3. if fixsymlinks is true: rename the paths of all symlinks to this inode
-    4. if inode is file: decrease vcb.num_files
-    5. if the inode is a symlink: remove that symlink from the `dests` attribute of the linked file
-    6. if inode is directory: 
-        1. decrease vcb.num_directories
-        2. use `unlink` on all files in the directory
-
-#### Change Permissions
-
-```bash
-jfs chmod USER_PERMISSIONS= ALL_PERMISSIONS= PATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
-```
-
-Change permissions for a file. *_PERMISSIONS are a single digit number 0-7 with standard UNIX meaning (0=none, 1=only read, 7=read, write, and execute)
-
-#### Detect Corruption
-
-```bash
-jfs detect_corruption PATH= RECURSIVE=false TRYFIX=false DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
-```
-
-Detect corruption with the parity bit and conditionally correct if a single bit flip.
-
-#### Volume Info
-
-```bash
-jfs volume_info DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false
-```
-
-Get data contained in volume control block. Aliases: `volume`. 
-
-### Utils
-
-VCB* get_VCB(DISKINFO* diskinfo);
-
-ERR write_file
-// writes across multiple blocks
-// decreases VCB free space and free blocks.
-// TODO: make this a special case when the util's alter the VCB
-
-int8* read_file
-// reads across multiple blocks
-
-int8* read_data(int64 block_loc, int16 data_len, DISKSINFO* disksinfo, bool force=0);
- A. if force==1, just read data section
- B. otherwise
-    1. raise error if not valid
-    2. read data section and compute parity
-    3. raise error if parity is not correct
-
-ERRNO write_data(int64 block_loc, int16 data_len, int8* data, DISKSINFO* disksinfo);
-// agnostic to volume information (does not update VCB free space or obey reserved sections rule)
- 1. set valid
- 2. write to data and compute parity
- 3. write parity
-
-consts
-typedef struct {
-    char** disks;
-    int8 mirrors;
-    int8 chains;
-    bool striped;
-} DISKSINFO;
-typedef struct {
-    ... all data listed in VCB above
-    (use next higher order size_t int's in most cases)
-} VCB;
-
 
 ## Under the hood
 
-Paths use UNIX style foreward-slash `/` directory addressing. *Directories* are *inodes* that list absolute paths to other inodes using '//' as a separator. (The root `/` is a directory.) Symbolic links only list one absolute path in their contents. Files can also be inodes. A single inode is stored across linked blocks (NULL terminal link). However a master inode table is used to store the full paths and start block number of all files. The metadata of an inode is stored in *attributes*. The *attribute table* lists key names, value bit length, inheritance, and the default value of all attributes. A value length limit of 0 means the attribute has an unknown (>=0) bit length terminated by 0 (such as a C-string). Both attribute keys and values can spill across multiple blocks. This allows file names to have arbitrary length 😊. Files must have `filesize` declared, and directories and symlinks must have `dests` declared, but otherwise attribute declaration is optional, and attribute values (such as permissions) can be inherited from their containing directory of drive. `nobody` is the immutable user that owns the root. (See "attribute table" below for more details.) The `filedata` (not same as block's `data` section) contains the actual file contents. It is positioned after all attribute declarations, and contains `filesize` bits.
+Paths use UNIX style foreward-slash `/` directory addressing. *Directories* are *inodes* that list absolute paths to other inodes using '//' as a separator. (The root `/` is a directory.) Symbolic links only list one absolute path in their contents. Files can also be inodes. A single inode is stored across linked blocks (NULL terminal link). However a master inode table is used to store the full paths and start block number of all files. The metadata of an inode is stored in *attributes*. The *attribute table* lists key names, value bit length, inheritance, and the default value of all attributes. A value length limit of 0 means the attribute has an unknown (>=0) bit length terminated by 0 (such as a C-string). Both attribute keys and values can spill across multiple blocks. This allows file names to have arbitrary length 😊. Files must have `filesize` declared, and directories and symlinks must have `dests` declared, but otherwise attribute declaration is optional, and attribute values (such as permissions) can be inherited from their containing directory of drive. (Symlinks look like directories with one link.) `nobody` is the immutable user that owns the root. (See "attribute table" below for more details.) The `filedata` (not same as block's `data` section) contains the actual file contents. It is positioned after all attribute declarations, and contains `filesize` bits.
 
-All blocks are structured as `[ valid (1b) | data  (DATA_LEN) | parity (N_PARITY) ]`. The parity is only computed from the data section. The term *disk* refers to all the bits of a Jacob Disk Format `.jdf` fille while *volume* refers to the data contained on a (or multiple) disks. A volume is hosted on RAIDs which are composed of optionally 1) mirrored, 2) chained, and/or 3) striped disks with operations performed in that order. Specifying `disks=disk0,disk1,disk2,you_have_to_type_it_all,disk58,disk59 --chains=4, --striped=true, --mirrors=3` would 1) designate disks 0-19, 20-39, and 40-59 as mirror images, 2) form 4 chains in each mirror image (the first image would have disks 0-4, 5-9, 10-14, 15-19 form the chains), and finally, 3) stripe the volume data across each of those chains. RAID settings (along with future config settings) may be passed by arg in the CLI, read from the OS environment variables, or saved in `~/.jfs_defaults`. A single disk system denotes 1 single-disk-chain with no stripes or mirror. 
+All blocks are structured as `[ xxxx xxx(valid=0/1) | data  (DATA_LEN) | (left padding if any) parity (N_PARITY) ]`. The parity is only computed from the data section. The term *disk* refers to all the bits of a Jacob Disk Format `.jdf` fille while *volume* refers to the data contained on a (or multiple) disks. A volume is hosted on RAIDs which are composed of optionally 1) mirrored, 2) chained, and/or 3) striped disks with operations performed in that order. Specifying `disks=disk0,disk1,disk2,you_have_to_type_it_all,disk58,disk59 --chains=4, --striped=true, --mirrors=3` would 1) designate disks 0-19, 20-39, and 40-59 as mirror images, 2) form 4 chains in each mirror image (the first image would have disks 0-4, 5-9, 10-14, 15-19 form the chains), and finally, 3) stripe the volume data across each of those chains. RAID settings (along with future config settings) may be passed by arg in the CLI, read from the OS environment variables, or saved in `~/.jfs_defaults`. A single disk system denotes 1 single-disk-chain with no stripes or mirror. 
 
 ### Volume structure
  - Volume control block (VCB)
@@ -429,14 +302,14 @@ Code uses bits unless otherwise specified.
 
 ### Configuration variables
 
-These variables may be passed as process arguments, inherited from the OS environment, stored in `~/.jfs_config`, or default (ordered in decreasing precedence). The `disk` arg can be used repeatedly in the CLI instead of comma separated `disks`. In that case, `disk` values are used to temporarily update the `disks` variable.
+These variables are used by the CLI. They may be passed as process / command line arguments, inherited from the OS environment, stored in `~/.jfs_config`, or default (ordered in decreasing precedence). The `disk` arg can be used repeatedly to append comma separate paths to `disks`.
 
 | name | type | default | extra |
 | ---- | ---- | -------------- | ----- |
 | `disks` | `string` | (none) | comma separated (no space) filepaths (in the host OS) to each of the disk `.jdf` files. Example: `disk0.jdf,/tmp/mydisk,local_dir/disk2.bin` |
 | `mirrors` | `int` | `0` | 0 means no  mirrors |
 | `chains` | `int` | `1` |  |
-| `striped` | `true\|false` | `false` |  |
+| `striped` | `bool` | `false` |  |
 | `user` | `string` | `nobody` |  |
 
 

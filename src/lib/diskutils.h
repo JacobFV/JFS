@@ -3,27 +3,6 @@
 
 #include "def.h"
 
-struct raidinfo {
-    int8_t mirrors;
-    int8_t chains;
-    int8_t stripes;
-    int8_t num_disks;
-    char* paths;
-};
-typedef struct raidinfo* RAIDINFO;
-
-struct raid {
-    int8_t mirrors;
-    int8_t chains;
-    int8_t stripes;
-    int8_t num_disks;
-    FILE** files;
-};
-typedef struct raid* RAID;
-
-#define MIRRORS_DIFFERENT 123001
-#define INVALID_BLOCK_READ 123002
-#define NO_INVALID_BLOCKS 123003
 
 error_t write_raid_bytes(BYTE_LOC byte_loc, BYTE_LOC byte_len, int8_t* bytes, RAID raid);
 /*  Writes raw bytes from `loc` to `loc+len`
@@ -51,4 +30,4 @@ error_t read_raid_block(BLOC_LOC bloc_loc, BLOC_DATA data, RAID raid, int64_t bl
 error_t find_next_free_block(BLOC_LOC starting, int64_t block_size, BLOC_LOC* next_free);
 /*  Finds next free block on raid (where valid bit = 0). */
 
-#endif
+#endif /* DISKUTILS_HEADER */
