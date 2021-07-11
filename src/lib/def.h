@@ -1,11 +1,12 @@
 #ifndef DEF_HEADER
 #define DEF_HEADER 1
 
-#include<stdint.h>
-#include<stdexcept>
+#include<stdio.h>
 #include<stdlib.h>
+#include<stdint.h>
 #include<stdbool.h>
 #include<string.h>
+#include<errno.h>
 
 typedef int8_t byte;
 typedef int64_t BYTE_LOC;
