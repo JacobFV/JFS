@@ -7,7 +7,10 @@
 VCB new_VCB();
 /*  Allocates and initializes a new VCB. */
 
-void serialize_VCB(VCB vcb, int64_t** len, byte* data);
-/*  Serializes a VCB to a byte array and sets length */
+VCB load_VCB(RAID raid);
+/*  Loads VCB from raid */
+
+void save_VCB(VCB vcb, RAID raid);
+/*  Saves vcb to raid */
 
 #endif /* VCB_HEADER */

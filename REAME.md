@@ -202,7 +202,8 @@ jfs rename OLDPATH= NEWPATH= FIXSYMLINKS=true RECURSIVE=true DISKS= DISK=... MIR
 
     Renames / moves an inode from OLDPATH to NEWPATH. Optionally fixes
     symbolic links to newly moved inode. Optionally moves recursively
-    (which allows entire directories to be moved).
+    (which allows entire directories to be moved) but does not move the
+    symlinked files.
     
     Aliases: `move`.
 
@@ -214,7 +215,60 @@ jfs put_external_file EXTERNAL_FILEPATH= INTERNAL_FILEPATH= DISKS= DISK=... MIRR
     
     Aliases: `put`
 
-I stopped here. Continue by copying and specifying API's from jfs.h
+
+jfs get_external_file INTERNAL_FILEPATH= EXTERNAL_FILEPATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    Gets (retrieves) a single file from Jacob's file system
+    to put on the host OS filesystem. Does not delete internal
+    file from Jacob's filesystem. 
+
+    Aliases: `get`
+
+
+jfs set_user PATH= NEW_USER= RECURSIVE=true DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    Assigns the file at PATH to NEW_USER. Optionally changes ownership 
+    recursively but not across symlinks (which allows entire directories
+    to change ownership).
+
+    Aliases `user`, `chown`. 
+
+
+jfs link EXISTING_PATH= NEW_PATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    Creates a link with path NEW_PATH to an inode at EXISTING_PATH.
+
+
+jfs unlink PATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    Unlinks an inode at PATH.
+
+
+jfs set_permissions USER_PERMISSIONS= ALL_PERMISSIONS= PATH= RECURSIVE= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    Change permissions for an inode. USER_PERMISSIONS / ALL_PERMISSIONS
+    are a single digit number 0-7 with standard UNIX bit flag meaning:
+    (0=none, 1=only read, 2=only write, 3=read and write, 4=only exec,
+    5=read and exec, 6=write and exec, and 7=read, write, and execute)
+    Optionally sets permissions recursively, but not across symlinks.
+
+    Aliases: `chmod`
+
+
+jfs detect_corruption PATH= RECURSIVE=false TRYFIX=false DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    Detect corruption in blocks holding data for file at PATH.
+    Optionally checks for corruption recursively and across symlinks.
+    Optionally corrects single bit error using parity bits.
+
+    Aliases: `corruption`
+
+
+jfs volume_info DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false
+
+    Get data contained in volume control block.
+    
+    Aliases: `vcb`. 
 
 ```
 
@@ -238,41 +292,49 @@ I stopped here. Continue by copying and specifying API's from jfs.h
 
 Paths use UNIX style foreward-slash `/` directory addressing. *Directories* are *inodes* that list absolute paths to other inodes using '//' as a separator. (The root `/` is a directory.) Symbolic links only list one absolute path in their contents. Files can also be inodes. A single inode is stored across linked blocks (NULL terminal link). However a master inode table is used to store the full paths and start block number of all files. The metadata of an inode is stored in *attributes*. The *attribute table* lists key names, value bit length, inheritance, and the default value of all attributes. A value length limit of 0 means the attribute has an unknown (>=0) bit length terminated by 0 (such as a C-string). Both attribute keys and values can spill across multiple blocks. This allows file names to have arbitrary length 😊. Files must have `filesize` declared, and directories and symlinks must have `dests` declared, but otherwise attribute declaration is optional, and attribute values (such as permissions) can be inherited from their containing directory of drive. (Symlinks look like directories with one link.) `nobody` is the immutable user that owns the root. (See "attribute table" below for more details.) The `filedata` (not same as block's `data` section) contains the actual file contents. It is positioned after all attribute declarations, and contains `filesize` bits.
 
-All blocks are structured as `[ xxxx xxx(valid=0/1) | data  (DATA_LEN) | (left padding if any) parity (N_PARITY) ]`. The parity is only computed from the data section. The term *disk* refers to all the bits of a Jacob Disk Format `.jdf` fille while *volume* refers to the data contained on a (or multiple) disks. A volume is hosted on RAIDs which are composed of optionally 1) mirrored, 2) chained, and/or 3) striped disks with operations performed in that order. Specifying `disks=disk0,disk1,disk2,you_have_to_type_it_all,disk58,disk59 --chains=4, --striped=true, --mirrors=3` would 1) designate disks 0-19, 20-39, and 40-59 as mirror images, 2) form 4 chains in each mirror image (the first image would have disks 0-4, 5-9, 10-14, 15-19 form the chains), and finally, 3) stripe the volume data across each of those chains. RAID settings (along with future config settings) may be passed by arg in the CLI, read from the OS environment variables, or saved in `~/.jfs_defaults`. A single disk system denotes 1 single-disk-chain with no stripes or mirror. 
+All blocks are structured as `[ xxxx xxx(valid=0/1) | data  (DATA_LEN) | (left padding if any) parity (N_PARITY) ]`. The parity is only computed from the data section. The term *disk* refers to all the bits of a Jacob Disk Format `.jdf` fille while *volume* refers to the data contained on a (or multiple) disks. A volume is hosted on RAIDs which are composed of optionally 1) mirrored, 2) chained, and/or 3) striped disks with operations performed in that order. Specifying `disks=disk0,disk1,disk2,you_have_to_type_it_all,disk58,disk59 chains=4, striped=true, mirrors=3` would 1) designate disks 0-19, 20-39, and 40-59 as mirror images, 2) form 4 chains in each mirror image (the first image would have disks 0-4, 5-9, 10-14, 15-19 form the chains), and finally, 3) stripe the volume data across each of those chains. RAID settings (along with future config settings) may be passed by arg in the CLI, read from the OS environment variables, or saved in `~/.jfs_defaults`. A single disk system denotes 1 single-disk-chain with no stripes or mirror. 
 
 ### Volume structure
- - Volume control block (VCB)
-   - block size: 64B
-   - jfs format version (major): 64B
-   - jfs format version (minor): 64B
-   - volume name: ?
-   - datetime last formatted: 64B
-   - total space: LOC_POW
-   - max possible usable space: LOC_POW
-   - free space: LOC_POW
-   - free blocks: LOC_POW
-   - num files: LOC_POW
-   - num directories: LOC_POW
-   - total inodes: LOC_POW
-   - master inode table: ? *
-      - absolute path: ?
-      - inode start block: LOC_POW 
-   - next free block: LOC_POW
-   - num reserved sections: 2B
-   - reserved sections: ? *
-       - start: LOC_POW
-       - end: LOC_POW
-   - num users: NUM_USR_POW
-   - users:
-      - name: ?
- - inodes: ? *
-   - next block (or 0 if just end): LOC_POW
-   - num attributes: MAX_ATTRS
-   - content: ?
-      - attributes: ? *
-         - attr key: MAX_ATTRS_POW
-         - attr_value: ? (specified by attribute or terminated by 0x00)
-      - filedata: ? (determined by `file_size`)   
+```c
+// lib/def.h
+
+struct VCB_struct {
+    int64_t block_size;
+    int64_t jfs_format_version_major;
+    int64_t jfs_format_version_minor;
+    char* volume_name;
+    int64_t datetime_last_formatted;
+    BLOC_LOC total_space; // raw bytes
+    BLOC_LOC max_possible_usable_space; // potentially usable bytes subtracting fs overhead
+    BLOC_LOC free_space; // bytes
+    BLOC_LOC free_blocks; // blocks
+    BLOC_LOC num_files;
+    BLOC_LOC num_dirs;
+    BLOC_LOC num_symlinks;
+    BLOC_LOC total_inodes;
+    INODE* master_inode_table;
+    BLOC_LOC next_free_block;
+    int16_t num_reserved_chains;
+    BLOC_LOC** reserved_chain_starting_blocs;
+    int8_t num_users;
+    char** unames;
+};
+
+// . . .
+
+struct FILEATTR_struct {
+    int8_t id;
+    void* val;
+};
+
+// . . .
+
+struct JFILE_struct {
+    int8_t num_attrs;
+    FILEATTR* attrs;
+    byte* content;
+};
+```
 
 ### Compiler and Volume Constants
 Code uses bits unless otherwise specified.
@@ -288,6 +350,10 @@ Code uses bits unless otherwise specified.
 
 ### Attribute table
 
+Dirs have a `dests` attribute. 
+Symlinks have a `links_to` attribute.
+Files have a `file_size` attribute.
+
 | Key | maxlen | inherited? | extra |
 | --- | ------ | ---------- | ----------- |
 | owner | NUM_USR_POW | `true` | `nobody` owns the root |
@@ -298,7 +364,9 @@ Code uses bits unless otherwise specified.
 | last_read_dt | 64b | `false` | `size_t` |
 | last_write_dt |  64b | `false` | `size_t` |
 | last_exec_dt |  64b | `false` | `size_t` |
-| dests | 0 | `false` | C-string stores `/` separated paths for directories and symlinks. |
+| dests | 0 | `false` | C-string stores `/` separated paths for directories. |
+| links_to | 0 | `false` | C-string for symlinks |
+| incoming_links | 0 | `false` | C-string stores `/` separated paths to dirs and symlinks. |
 
 ### Configuration variables
 
