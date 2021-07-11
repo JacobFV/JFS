@@ -23,7 +23,6 @@ struct RAIDINFO_struct {
     char* paths;
 };
 typedef struct RAIDINFO_struct* RAIDINFO;
-void free_RAIDINFO(RAIDINFO raidinfo);
 
 struct RAID_struct {
     int8_t mirrors;
@@ -33,11 +32,10 @@ struct RAID_struct {
     FILE** files;
 };
 typedef struct RAID_struct* RAID;
-void free_RAID(RAID raid);
 
-#define MIRRORS_DIFFERENT 123001
-#define INVALID_BLOCK_READ 123002
-#define NO_INVALID_BLOCKS 123003
+#define MIRRORS_DIFFERENT  0b1010101000000001
+#define INVALID_BLOCK_READ 0b1010101000000010
+#define NO_INVALID_BLOCKS  0b1010101000000100
 
 typedef int8_t USER;
 
@@ -46,7 +44,6 @@ struct INODE_struct {
     BLOC_LOC start_block;
 };
 typedef struct INODE_struct* INODE;
-void free_inode(INODE inode);
 
 struct VCB_struct {
     int64_t block_size;
@@ -70,15 +67,12 @@ struct VCB_struct {
     char** unames;
 };
 typedef struct VCB_struct* VCB;
-void free_VCB(VCB vcb, RAID raid);
-/*  Saves and free vcb */
 
 struct FILEATTR_struct {
     int8_t id;
     void* val;
 };
 typedef struct FILEATTR_struct* FILEATTR;
-void free_FILEATTR(FILEATTR fileattr);
 
 struct JFILE_struct {
     int8_t num_attrs;
@@ -86,7 +80,7 @@ struct JFILE_struct {
     byte* content;
 };
 typedef struct JFILE_struct JFILE;
-void free_JFILE(JFILE jfile);
 
+#define PERMISSION_DENIED  0b1010101000001000
 
 #endif /* DEF_HEADER */

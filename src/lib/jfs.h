@@ -3,9 +3,6 @@
 
 #include "def.h"
 
-// TODO all of the policies and mechanisms need to specify 
-// how error codes are decided
-
 
 error_t create(int64_t num_blocks, int32_t block_size, 
                char* volume_name, RAIDINFO desired_raid_info);
@@ -15,17 +12,22 @@ error_t create(int64_t num_blocks, int32_t block_size,
 
     Mechanism:
     1. create disk files
-    2. use backend `format` to format new disk files */
+    2. use backend `format` to format new disk files
+    3. use `print_error` to print and also return
+        error codes encountered */
 
 error_t format(int32_t block_size, char* volume_name, RAID raid);
 /*  Policy: 
     Formats disk(s). 
 
     Mechanism:
-    1. use `write_raid_bytes_raw` to propperly write 0's to from 0 to `num_blocks*block_size`
+    1. use `write_raid_bytes_raw` to propperly write 0's 
+        from 0 to `num_blocks*block_size`
     2. write volume control block
         1. generate VCB in memory with `new_VCB`
-        2. serialize VCB to bytes with `save_VCB` */
+        2. serialize VCB to bytes with `save_VCB`
+    3. use `print_error` to print and also return
+        error codes encountered */
 
 error_t combine(char* new_name, RAID raid);
 /*  Policy: 
@@ -33,7 +35,9 @@ error_t combine(char* new_name, RAID raid);
 
     1. use backend `create` to make a new single disk named `NEWNAME`
     2. copy all bits raw onto to the new disk.
-        1. read and write blocks sequentially */
+        1. read and write blocks sequentially
+    3. use `print_error` to print and also return
+        error codes encountered */
 
 error_t list(char* path, bool include_meta, 
              bool include_contents, bool recursive, 
@@ -51,7 +55,9 @@ error_t list(char* path, bool include_meta,
     4. if `include_contents` is true and the inode has a filesize attribute: 
         1. print the contents of the inode
     5. if the inode at start_path is a directory and recursive is true: 
-        1. use `list` on all inodes in the directory. */
+        1. use `list` on all inodes in the directory.
+    6. use `print_error` to print and also return
+        error codes encountered */
 
 error_t remove(char* path, 
                VCB vcb, RAID raid, USER user);
@@ -66,7 +72,8 @@ error_t remove(char* path,
         - increase vcb free_blocks by block length of jfile
     3. assign all valid bits for the blocks used by the inode at PATH to false
     4. set vcb next_free_block to be the minimum of this inode's starting block
-        and the previous vcb next_free_block */
+        and the previous vcb next_free_block
+    5. use `print_error` to print and also return error codes encountered */
 
 error_t delete_inode(char* path, bool recursive, 
                      VCB vcb, RAID raid, USER user);
@@ -84,7 +91,8 @@ error_t delete_inode(char* path, bool recursive,
         A. if the inode was a directory:
             1. use `delete_inode` on all its children (recursively)
         B. if the inode was a symlink:
-            1. use `delete_inode` on all its linked inode (recursively) */
+            1. use `delete_inode` on all its linked inode (recursively)
+    5. use `print_error` to print and also return error codes encountered */
 
 error_t rename(char* oldpath, char* newpath, 
                bool fixsymlinks, bool recursive,
@@ -104,7 +112,8 @@ error_t rename(char* oldpath, char* newpath,
         2. if the inode is a directory:
             1. rename the paths in its dests field.
         3. if fixsymlinks is true: 
-            1. rename the paths of all symlinks into this inode */
+            1. rename the paths of all symlinks into this inode
+    3. use `print_error` to print and also return error codes encountered */
 
 error_t put(char* external_filepath, char* internal_filepath, 
             VCB vcb, RAID raid, USER user);
@@ -116,7 +125,8 @@ error_t put(char* external_filepath, char* internal_filepath,
     1. use `authenticate` to ensure the user has permission to write 
         to the directory containing internal_filepath
     2. get file at external_path from OS
-    3. use `create_inode_and_jfile` to add file to jfs */
+    3. use `create_inode_and_jfile` to add file to jfs
+    4. use `print_error` to print and also return error codes encountered */
 
 error_t get(char* internal_filepath, char* external_filepath, 
             VCB vcb, RAID raid, USER user);
@@ -131,7 +141,8 @@ error_t get(char* internal_filepath, char* external_filepath,
     2. use `open_jfile` to open the file at internal_filepath
     3. create and open a new file in the host OS filesystem at 
         external_filepath for writing
-    4. copy all bytes from the internal file to the external file. */
+    4. copy all bytes from the internal file to the external file.
+    5. use `print_error` to print and also return error codes encountered */
 
 error_t set_user(char* path, char* new_user, bool recursive, 
                  VCB vcb, RAID raid, USER user);
@@ -145,7 +156,8 @@ error_t set_user(char* path, char* new_user, bool recursive,
     2. change the `owner` attribute to user
     4. if recursive and jfile is directory:
         1. run `set_user` on all children in directory
-    5. use `save_jfile` to save jfile to jfs */
+    5. use `save_jfile` to save jfile to jfs
+    6. use `print_error` to print and also return error codes encountered */
 
 error_t link(char* existing_path, char* new_path, 
              VCB vcb, RAID raid, USER user);
@@ -161,7 +173,8 @@ error_t link(char* existing_path, char* new_path,
     3. add this link to the incoming links at new_path
         1. open jfile
         2. append path to symlink
-        3. save jfile */
+        3. save jfile
+    4. use `print_error` to print and also return error codes encountered */
 
 error_t unlink(char* path, bool recursive,
                VCB vcb, RAID raid, USER user);
@@ -183,7 +196,8 @@ error_t unlink(char* path, bool recursive,
             2. if recursive is true:
                 1. use `unlink` on all files in the directory
         3. remove inode from master inode table
-        4. decrement vcb total_inodes */
+        4. decrement vcb total_inodes
+    3. use `print_error` to print and also return error codes encountered */
 
 error_t set_permissions(int8_t user_permissions, int8_t all_permissions, 
                         char* path, bool recursive, 
@@ -201,7 +215,8 @@ error_t set_permissions(int8_t user_permissions, int8_t all_permissions,
     3. change the `all_permissions` attribute to all_permissions
     4. if recursive and jfile is directory:
         1. run `set_permissions` on all children in directory
-    5. use `save_jfile` to save jfile to jfs */
+    5. use `save_jfile` to save jfile to jfs
+    6. use `print_error` to print and also return error codes encountered */
 
 error_t corruption(char* path, bool recursive, bool tryfix, 
                    VCB vcb, RAID raid, USER user);
@@ -212,7 +227,8 @@ error_t corruption(char* path, bool recursive, bool tryfix,
 
     Mechanism:
     1. foreward errors from `read_raid_bytes_linked` starting at
-        the first block for inode at path */
+        the first block for inode at path
+    2. use `print_error` to print and also return error codes encountered */
 
 error_t volume_info(VCB vcb);
 /*  Policy: 
@@ -220,24 +236,30 @@ error_t volume_info(VCB vcb);
 
     Mechanism: 
     1. for every field of VCB in the order declared
-        1. print field value */
+        1. print field value
+    2. use `print_error` to print and also 
+        return error codes encountered */
 
 
-error_t new_user(USER user, VCB vcb, RAID raid);
+error_t new_user(char* uname, VCB vcb, RAID raid);
 /*  Policy:
     Adds a new user
 
     Mechanism:
     1. increment vcb num_users
-    2. add user to vcb users */
+    2. add user to vcb users
+    3. use `print_error` to print and also 
+        return error codes encountered */
 
-error_t remove_user(USER user, VCB vcb, RAID raid);
+error_t remove_user(char* uname, VCB vcb, RAID raid);
 /*  Policy:
     Removes a user
 
     Mechanism:
     1. look for and remove user from vcb users
-    2. decrement vcb num_users */
+    2. decrement vcb num_users
+    3. use `print_error` to print and also 
+        return error codes encountered */
 
 error_t mkdir(char* path, 
               VCB vcb, RAID raid, USER user);
@@ -247,7 +269,9 @@ error_t mkdir(char* path,
     Mechanism:
     1. use `authenticate` to ensure the user has permission to write 
         to the directory containing path
-    3. use `create_inode_and_jfile` to add an empty dir to jfs */
+    2. use `create_inode_and_jfile` to add an empty dir to jfs
+    3. use `print_error` to print and also 
+        return error codes encountered */
 
 
 # endif /* JFS_HEADER */

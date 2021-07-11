@@ -270,6 +270,21 @@ jfs volume_info DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false
     
     Aliases: `vcb`. 
 
+
+jfs new_user UNAME= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false
+
+    Adds a new user
+    
+
+jfs remove_user UNAME= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false
+
+    Removes a user
+
+
+jfs mkdir PATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
+
+    Makes a new directory at PATH.
+
 ```
 
 **Main:**
