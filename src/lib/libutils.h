@@ -3,22 +3,43 @@
 
 #include "def.h"
 
+RAIDINFO new_raidinfo(int8_t mirrors, int8_t chains, 
+                      int8_t stripes, int8_t num_disks,
+                      char* paths);
+/*  Makes new raidinfo object */
+
 void free_RAIDINFO(RAIDINFO raidinfo);
 /*  Frees raidinfo */
 
-void free_RAID(RAID raid);
-/*  Closes and frees raid */
+ERR open_RAID(RAIDINFO raidinfo, RAID* raid);
+/*  Makes RAID pointer
+
+    Returns -1 and prints message if there are errors opening the files for raid
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR free_RAID(RAID raid);
+/*  Closes and frees raid 
+
+    Returns -1 and prints message if any file errors are encountered
+    Otherwise silently returns 0 */
 
 void free_inode(INODE inode);
 /*  Frees inode */
 
-void free_VCB(VCB vcb, RAID raid);
-/*  Saves and frees vcb. */
+ERR free_VCB(VCB vcb, RAID raid);
+/*  Saves and frees vcb.
+
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
 
 void free_FILEATTR(FILEATTR fileattr);
 /*  Frees fileattr. */
 
-void free_JFILE(JFILE jfile);
-/*  Saves and frees jfile. */
+ERR free_JFILE(JFILE jfile);
+/*  Saves and frees jfile.
+
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
 
 #endif /* LIBUTILS_HEADER */

@@ -4,17 +4,20 @@
 #include "def.h"
 
 
-void create(int64_t num_blocks, int32_t block_size, 
-            char* volume_name, RAIDINFO desired_raid_info);
+ERR create(int64_t num_blocks, int32_t block_size, 
+           char* volume_name, RAIDINFO desired_raid_info);
 /*  Policy: 
     Creates new disk(s) and then formats a new volume on those disks.
     Disks are equally sized and ceiling rounded if necesary. 
 
     Mechanism:
     1. create disk files
-    2. use backend `format` to format new disk files */
+    2. use backend `format` to format new disk files 
 
-void format(int32_t block_size, char* volume_name, RAID raid);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR format(int32_t block_size, char* volume_name, RAID raid);
 /*  Policy: 
     Formats disk(s). 
 
@@ -23,19 +26,25 @@ void format(int32_t block_size, char* volume_name, RAID raid);
         from 0 to `num_blocks*block_size`
     2. write volume control block
         1. generate VCB in memory with `new_VCB`
-        2. serialize VCB to bytes with `save_VCB` */
+        2. serialize VCB to bytes with `save_VCB`
 
-void combine(char* new_name, RAID raid);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR combine(char* new_name, RAID raid);
 /*  Policy: 
     Combine all the disk(s) to a single disk file named NEWNAME. 
 
     1. use backend `create` to make a new single disk named `NEWNAME`
     2. copy all bits raw onto to the new disk.
-        1. read and write blocks sequentially */
+        1. read and write blocks sequentially
 
-void list(char* path, bool include_meta, 
-          bool include_contents, bool recursive, 
-          VCB vcb, RAID raid, USER user);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR list(char* path, bool include_meta, 
+         bool include_contents, bool recursive, 
+         VCB vcb, RAID raid, USER user);
 /*  Policy: 
     List paths (and optionally meta-information and file contents)
     starting from `path`. Optionally lists recursively and across
@@ -49,10 +58,13 @@ void list(char* path, bool include_meta,
     4. if `include_contents` is true and the inode has a filesize attribute: 
         1. print the contents of the inode
     5. if the inode at start_path is a directory and recursive is true: 
-        1. use `list` on all inodes in the directory. */
+        1. use `list` on all inodes in the directory.
 
-void remove(char* path, 
-            VCB vcb, RAID raid, USER user);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR remove(char* path, 
+           VCB vcb, RAID raid, USER user);
 /*  Policy: 
     Frees the space used by a single inode at PATH. Does not actually
     unlink the inode (unlinking is usually called after removing).
@@ -64,10 +76,13 @@ void remove(char* path,
         - increase vcb free_blocks by block length of jfile
     3. assign all valid bits for the blocks used by the inode at PATH to false
     4. set vcb next_free_block to be the minimum of this inode's starting block
-        and the previous vcb next_free_block */
+        and the previous vcb next_free_block
 
-void delete_inode(char* path, bool recursive, 
-                  VCB vcb, RAID raid, USER user);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR delete_inode(char* path, bool recursive, 
+                 VCB vcb, RAID raid, USER user);
 /*  Policy:
     Removes and unlinks an inode starting from PATH. Optionally 
     deletes recursively and across symlinks.
@@ -82,11 +97,14 @@ void delete_inode(char* path, bool recursive,
         A. if the inode was a directory:
             1. use `delete_inode` on all its children (recursively)
         B. if the inode was a symlink:
-            1. use `delete_inode` on all its linked inode (recursively) */
+            1. use `delete_inode` on all its linked inode (recursively)
 
-void rename(char* oldpath, char* newpath, 
-            bool fixsymlinks, bool recursive,
-            VCB vcb, RAID raid, USER user);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR rename(char* oldpath, char* newpath, 
+           bool fixsymlinks, bool recursive,
+           VCB vcb, RAID raid, USER user);
 /*  Policy:
     Renames / moves an inode from OLDPATH to NEWPATH. Optionally fixes
     symbolic links to newly moved inode. Optionally moves recursively
@@ -102,10 +120,13 @@ void rename(char* oldpath, char* newpath,
         2. if the inode is a directory:
             1. rename the paths in its dests field.
         3. if fixsymlinks is true: 
-            1. rename the paths of all symlinks into this inode */
+            1. rename the paths of all symlinks into this inode 
 
-void put(char* external_filepath, char* internal_filepath, 
-         VCB vcb, RAID raid, USER user);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0*/
+
+ERR put(char* external_filepath, char* internal_filepath, 
+        VCB vcb, RAID raid, USER user);
 /*  Policy:
     Puts (stores) a single file from host OS into the jfs disk.
     Does not delete external file from host OS filesystem. 
@@ -114,10 +135,14 @@ void put(char* external_filepath, char* internal_filepath,
     1. use `authenticate` to ensure the user has permission to write 
         to the directory containing internal_filepath
     2. get file at external_path from OS
-    3. use `create_inode_and_jfile` to add file to jfs */
+    3. use `create_inode_and_jfile` to add file to jfs
 
-void get(char* internal_filepath, char* external_filepath, 
-         VCB vcb, RAID raid, USER user);
+    Returns -1 and prints message if there are any errors opening external file.
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR get(char* internal_filepath, char* external_filepath, 
+        VCB vcb, RAID raid, USER user);
 /*  Policy:
     Gets (retrieves) a single file from Jacob's file system
     to put on the host OS filesystem. Does not delete internal
@@ -129,10 +154,14 @@ void get(char* internal_filepath, char* external_filepath,
     2. use `open_jfile` to open the file at internal_filepath
     3. create and open a new file in the host OS filesystem at 
         external_filepath for writing
-    4. copy all bytes from the internal file to the external file. */
+    4. copy all bytes from the internal file to the external file. 
+    
+    Returns -1 and prints message if there are any errors opening external file.
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
 
-void set_user(char* path, char* new_user, bool recursive, 
-              VCB vcb, RAID raid, USER user);
+ERR set_user(char* path, char* new_user, bool recursive, 
+             VCB vcb, RAID raid, USER user);
 /*  Policy:
     Assigns the file at PATH to NEW_USER. Optionally changes ownership 
     recursively but not across symlinks (which allows entire directories
@@ -143,10 +172,13 @@ void set_user(char* path, char* new_user, bool recursive,
     2. change the `owner` attribute to user
     4. if recursive and jfile is directory:
         1. run `set_user` on all children in directory
-    5. use `save_jfile` to save jfile to jfs */
+    5. use `save_jfile` to save jfile to jfs 
 
-void link(char* existing_path, char* new_path, 
-          VCB vcb, RAID raid, USER user);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR link(char* existing_path, char* new_path, 
+         VCB vcb, RAID raid, USER user);
 /*  Policy:
     Creates a link with path new_path to an inode at existing_path.
 
@@ -159,10 +191,13 @@ void link(char* existing_path, char* new_path,
     3. add this link to the incoming links at new_path
         1. open jfile
         2. append path to symlink
-        3. save jfile */
+        3. save jfile 
 
-void unlink(char* path, bool recursive,
-            VCB vcb, RAID raid, USER user);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR unlink(char* path, bool recursive,
+           VCB vcb, RAID raid, USER user);
 /*  Policy:
     Unlinks an inode at path.
 
@@ -181,11 +216,14 @@ void unlink(char* path, bool recursive,
             2. if recursive is true:
                 1. use `unlink` on all files in the directory
         3. remove inode from master inode table
-        4. decrement vcb total_inodes */
+        4. decrement vcb total_inodes 
 
-void set_permissions(int8_t user_permissions, int8_t all_permissions, 
-                     char* path, bool recursive, 
-                     VCB vcb, RAID raid, USER user);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR set_permissions(int8_t user_permissions, int8_t all_permissions, 
+                    char* path, bool recursive, 
+                    VCB vcb, RAID raid, USER user);
 /*  Policy:
     Change permissions for an inode. USER_PERMISSIONS / ALL_PERMISSIONS
     are a single digit number 0-7 with standard UNIX bit flag meaning:
@@ -199,10 +237,14 @@ void set_permissions(int8_t user_permissions, int8_t all_permissions,
     3. change the `all_permissions` attribute to all_permissions
     4. if recursive and jfile is directory:
         1. run `set_permissions` on all children in directory
-    5. use `save_jfile` to save jfile to jfs */
+    5. use `save_jfile` to save jfile to jfs 
 
-void corruption(char* path, bool recursive, bool tryfix, 
-                VCB vcb, RAID raid, USER user);
+    Returns -1 and prints message if user/all_permissions is not in inclusive range 0..7
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR corruption(char* path, bool recursive, bool tryfix, 
+               VCB vcb, RAID raid, USER user);
 /*  Policy:
     Detect corruption in blocks holding data for file at PATH.
     Optionally checks for corruption recursively and across symlinks.
@@ -214,42 +256,56 @@ void corruption(char* path, bool recursive, bool tryfix,
         1. set fixcorrupt = tryfix
     2. if recursive is true:
         A. if jfile is a dir: use `corruption` on all children
-        B. if jfile is a symlink: use `corruption` on the `links_to` inode */
+        B. if jfile is a symlink: use `corruption` on the `links_to` inode 
+        
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
 
-void volume_info(VCB vcb);
+ERR volume_info(VCB vcb);
 /*  Policy: 
     Get data contained in volume control block.
 
     Mechanism: 
     1. for every field of VCB in the order declared
-        1. print field value */
+        1. print field value 
+        
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
 
 
-void new_user(char* uname, VCB vcb, RAID raid);
+ERR new_user(char* uname, VCB vcb);
 /*  Policy:
     Adds a new user
 
     Mechanism:
     1. increment vcb num_users
-    2. add user to vcb users */
+    2. add user to vcb users 
 
-void remove_user(char* uname, VCB vcb, RAID raid);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
+ERR remove_user(char* uname, VCB vcb);
 /*  Policy:
     Removes a user
 
     Mechanism:
     1. look for and remove user from vcb users
-    2. decrement vcb num_users */
+    2. decrement vcb num_users
 
-void mkdir(char* path, 
-           VCB vcb, RAID raid, USER user);
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0  */
+
+ERR mkdir(char* path, VCB vcb, RAID raid, USER user);
 /*  Policy:
     Makes a new directory at path.
 
     Mechanism:
     1. use `authenticate` to ensure the user has permission to write 
         to the directory containing path
-    2. use `create_inode_and_jfile` to add an empty dir to jfs */
+    2. use `create_inode_and_jfile` to add an empty dir to jfs 
+    
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
 
 
 # endif /* JFS_HEADER */

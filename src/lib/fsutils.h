@@ -12,11 +12,11 @@ char** separate_path_list(char* path_list);
     into: "/usr/bin", "/second/path", and "/third/path" */
 
 bool authenticate(char* path, bool read, bool write, bool execute,
-                  USER user, VCB vcb, RAID raid);
+                  USER user, VCB vcb);
 /*  Determines is user is allowed to perform a certain
     set of operations on an inode at `path`. */
 
-void create_inode_and_jfile(char* path, FILE* fp, 
+ERR create_inode_and_jfile(char* path, FILE* fp, 
                             FILEATTR* extra_attributes,
                             USER user, VCB vcb, RAID raid);
 /*  Policy:
@@ -52,10 +52,13 @@ void create_inode_and_jfile(char* path, FILE* fp,
         1. increment num inodes
         2A. if is file: increment num_files 
         2B. if is dir: increment num_dirs 
-        2C. if is symlink: increment num_symlinks */
+        2C. if is symlink: increment num_symlinks
+        
+    Forewards -1 if any errors are encountered by subroutines
+    Otherwise silently returns */
 
-JFILE open_jfile(char* path, bool fixcorrupt, 
-                 USER user, VCB vcb, RAID raid);
+ERR open_jfile(char* path, bool fixcorrupt, JFILE** jfile,
+               USER user, VCB vcb, RAID raid);
 /*  Policy:
     Opens JFILE from jfs disk and manages vcb logic
 
@@ -63,10 +66,13 @@ JFILE open_jfile(char* path, bool fixcorrupt,
     1. find block location of file
     2. deserialize file from data linked across blocks into a JFILE
     3. modify the JFILE last_read_dt attribute to now
-    4. return the JFILE */
+    4. set jfile to be pointed to by the doubley indirect pointer
+    
+    Forewards -1 if any errors are encountered by subroutines
+    Otherwise silently returns */
 
-void save_jfile(char* path, JFILE jfile,
-                USER user, VCB vcb, RAID raid);
+ERR save_jfile(char* path, JFILE jfile,
+               USER user, VCB vcb, RAID raid);
 /*  Policy:
     Serializes a JFILE onto Jacob's filesystem.
 
@@ -75,11 +81,14 @@ void save_jfile(char* path, JFILE jfile,
     2. use `write_raid_bytes_linked` to over-write the serialized jfile onto the jfs
         1. decrease free_blocks by new_blocks_written*
         2. decrease free_space by bytes_len of serialized bytes
-    7. update serialized_byte_len and serialized_bloc_len of jfile
-        to match the actual serialized length and blocks used. Then
-        repeat steps 1 and 2 once.
-    3. modify the JFILE last_write_dt attribute to now
-    4. foreward return code from write_raid_bytes_linked */
+    3. update serialized_byte_len and serialized_bloc_len of jfile
+        to match the actual serialized length and blocks used. 
+    4. repeat steps 1 and 2 once.
+    5. modify the JFILE last_write_dt attribute to now
+    6. foreward return code from write_raid_bytes_linked
+
+    Forewards -1 if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
 
 
 

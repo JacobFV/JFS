@@ -7,13 +7,14 @@
 #include<stdbool.h>
 #include<string.h>
 
+typedef int ERR;
 typedef int8_t byte;
 typedef int64_t BYTE_LOC;
 typedef int64_t BLOC_LOC;
 typedef int8_t* BLOCK;
 typedef int8_t* BLOC_DATA;
-const int32_t N_PARITY_BITS = 8;
-const int32_t N_PARITY = N_PARITY_BITS / 8;
+#define N_PARITY_BITS   8
+#define N_PARITY        N_PARITY_BITS / 8
 
 struct RAIDINFO_struct {
     int8_t mirrors;
@@ -75,6 +76,6 @@ struct JFILE_struct {
     FILEATTR* attrs;
     byte* content;
 };
-typedef struct JFILE_struct JFILE;
+typedef struct JFILE_struct* JFILE;
 
 #endif /* DEF_HEADER */
