@@ -7,7 +7,7 @@
 #include "fsutils.h"
 
 
-error_t create(int64_t num_blocks, int32_t block_size, 
+void create(int64_t num_blocks, int32_t block_size, 
                char* volume_name, RAIDINFO desired_raid_info);
 /*  Policy: 
     Creates new disk(s) and then formats a new volume on those disks.

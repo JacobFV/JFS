@@ -3,10 +3,6 @@
 
 #include "def.h"
 
-void print_error(error_t jfs_error);
-/*  Prints the user-readable form of any described by 
-    a error_t jfs error code */
-
 void free_RAIDINFO(RAIDINFO raidinfo);
 /*  Frees raidinfo */
 

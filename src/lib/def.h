@@ -6,7 +6,6 @@
 #include<stdint.h>
 #include<stdbool.h>
 #include<string.h>
-#include<errno.h>
 
 typedef int8_t byte;
 typedef int64_t BYTE_LOC;
@@ -33,10 +32,6 @@ struct RAID_struct {
     FILE** files;
 };
 typedef struct RAID_struct* RAID;
-
-#define MIRRORS_DIFFERENT  0b1010101000000001
-#define INVALID_BLOCK_READ 0b1010101000000010
-#define NO_INVALID_BLOCKS  0b1010101000000100
 
 typedef int8_t USER;
 
@@ -81,7 +76,5 @@ struct JFILE_struct {
     byte* content;
 };
 typedef struct JFILE_struct JFILE;
-
-#define PERMISSION_DENIED  0b1010101000001000
 
 #endif /* DEF_HEADER */

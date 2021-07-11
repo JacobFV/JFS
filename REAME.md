@@ -115,7 +115,7 @@ The jfs library provides core functionality for the shell, CLI, and whatever aws
 ```c
 // lib/jfs.h
 
-// TODO: put `jfs.h` here
+// TODO: put `jfs.h` and other select headers here
 ```
 
 ### CLI

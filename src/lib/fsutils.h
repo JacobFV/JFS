@@ -54,7 +54,7 @@ void create_inode_and_jfile(char* path, FILE* fp,
         2B. if is dir: increment num_dirs 
         2C. if is symlink: increment num_symlinks */
 
-JFILE open_jfile(char* path,
+JFILE open_jfile(char* path, bool fixcorrupt, 
                  USER user, VCB vcb, RAID raid);
 /*  Policy:
     Opens JFILE from jfs disk and manages vcb logic
@@ -65,8 +65,8 @@ JFILE open_jfile(char* path,
     3. modify the JFILE last_read_dt attribute to now
     4. return the JFILE */
 
-error_t save_jfile(char* path, JFILE jfile,
-                   USER user, VCB vcb, RAID raid);
+void save_jfile(char* path, JFILE jfile,
+                USER user, VCB vcb, RAID raid);
 /*  Policy:
     Serializes a JFILE onto Jacob's filesystem.
 
