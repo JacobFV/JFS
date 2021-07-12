@@ -241,7 +241,8 @@ jfs link EXISTING_PATH= NEW_PATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=fal
 
 jfs unlink PATH= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
 
-    Unlinks an inode at PATH.
+    Unlinks an inode at PATH. Optionally recursively across
+    symlinks and down directories.
 
 
 jfs set_permissions USER_PERMISSIONS= ALL_PERMISSIONS= PATH= RECURSIVE= DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
@@ -253,15 +254,6 @@ jfs set_permissions USER_PERMISSIONS= ALL_PERMISSIONS= PATH= RECURSIVE= DISKS= D
     Optionally sets permissions recursively, but not across symlinks.
 
     Aliases: `chmod`
-
-
-jfs detect_corruption PATH= RECURSIVE=false TRYFIX=false DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false USER=
-
-    Detect corruption in blocks holding data for file at PATH.
-    Optionally checks for corruption recursively and across symlinks.
-    Optionally corrects single bit error using parity bits.
-
-    Aliases: `corruption`
 
 
 jfs volume_info DISKS= DISK=... MIRRORS=0 CHAINS=1 STRIPED=false
@@ -371,11 +363,11 @@ Files have a `file_size` attribute.
 
 | Key | maxlen | inherited? | extra |
 | --- | ------ | ---------- | ----------- |
-| owner | NUM_USR_POW | `true` | `nobody` owns the root |
-| file_size | LOC_POW | `false` | only tabulates size of `filecontents` (not counting attributes) for inodes that store files (not directories or symlinks) |
-| disk_space | LOC_POW | `false` | tabulates in increments of `BLOCK_SIZE` |
-| user_permissions | 3b | `true` | root has `rwx` |
-| everybody_permissions | 3b | `true` | root has `rwx` |
+| owner | 8b | `true` | `nobody` owns the root |
+| file_size | 64b | `false` | only tabulates size of `filecontents` (not counting attributes) for inodes that store files (not directories or symlinks) |
+| disk_space | 64b | `false` | tabulates in increments of `BLOCK_SIZE` |
+| user_permissions | 8b | `true` | root has `rwx` |
+| everybody_permissions | 8b | `true` | root has `rwx` |
 | last_read_dt | 64b | `false` | `size_t` |
 | last_write_dt |  64b | `false` | `size_t` |
 | last_exec_dt |  64b | `false` | `size_t` |

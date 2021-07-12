@@ -6,6 +6,7 @@
 #include<stdint.h>
 #include<stdbool.h>
 #include<string.h>
+#include<time.h>
 
 typedef int ERR;
 typedef int8_t byte;
@@ -30,6 +31,7 @@ struct RAID_struct {
     int8_t chains;
     int8_t stripes;
     int8_t num_disks;
+    char* paths;
     FILE** files;
 };
 typedef struct RAID_struct* RAID;
@@ -65,16 +67,54 @@ struct VCB_struct {
 };
 typedef struct VCB_struct* VCB;
 
+typedef int ATTRTYPE;
+enum all_attrtypes_enum {
+    STRING_ATTRTYPE,
+    INT8_ATTRTYPE,
+    INT16_ATTRTYPE,
+    INT32_ATTRTYPE,
+    INT64_ATTRTYPE,
+};
+
+enum attribute_ids {
+    OWNER_ATTR_ID,
+    FILESIZE_ATTR_ID,
+    DISK_SPACE_ATTR_ID,
+    USER_PERMISSIONS_ATTR_ID,
+    ALL_PERMISSIONS_ATTR_ID,
+    LAST_READ_DT_ATTR_ID,
+    LAST_WRITE_DT_ATTR_ID,
+    LAST_EXEC_DT_ATTR_ID,
+    DESTS_ATTR_ID,
+    LINKS_TO_ATTR_ID,
+    INCOMING_LINKS_ATTR_ID,
+};
+
 struct FILEATTR_struct {
     int8_t id;
     void* val;
 };
 typedef struct FILEATTR_struct* FILEATTR;
 
+enum inode_type_enum { 
+    FILE_JFILE_TYPE, 
+    DIR_JFILE_TYPE, 
+    SYMLINK_JFILE_TYPE,
+};
+
 struct JFILE_struct {
     int8_t num_attrs;
     FILEATTR* attrs;
+
+    enum inode_type_enum inode_type;
+    BLOC_LOC filesize;
     byte* content;
+    char* dests;
+    char* links_to;
+
+    // this attribute is not defined in the file
+    // but provided for (super dirty) convenience
+    BLOC_LOC starting_bloc;
 };
 typedef struct JFILE_struct* JFILE;
 

@@ -36,7 +36,7 @@ ERR write_raid_block(BLOC_LOC bloc_loc, BLOC_DATA data, int64_t bloc_size, RAID 
 ERR read_raid_block(BLOC_LOC bloc_loc, BLOC_DATA data, int64_t bloc_size, 
                     bool fixcorrupt, RAID raid); 
 /*  Stores data bytes in block located at `loc_loc` onto `data`.
-    (Reads `bloc_size-1-N_PARITY` bytes starting from `bloc_loc+1`)
+    (Reads `block_size*bloc_size-1-N_PARITY` bytes starting from `block_size*bloc_loc+1`)
     
     Does perform corruption detection and optionally correction
 
@@ -80,7 +80,8 @@ ERR write_raid_bytes_linked(BLOC_LOC starting_block, BYTE_LOC bytes_len, int8_t*
 ERR read_raid_bytes_linked(BLOC_LOC starting_block, BYTE_LOC bytes_len, int8_t* bytes,
                            bool fixcorrupt, RAID raid);
 /*  Reads the bytes along linked blocks begining at `starting_block` 
-    until `bytes_len` bytes have been written to `bytes`.
+    until `bytes_len` bytes have been written to `bytes` or no more
+    linked blocks are found.
 
     Does perform corruption detection and optionally correction
 
