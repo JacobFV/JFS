@@ -106,25 +106,6 @@ ERR open_jfile(char* path, bool fixcorrupt, JFILE** jfile,
     Forewards -1 if any errors are encountered by subroutines
     Otherwise silently returns */
 
-/* THIS CODE GETS USEFUL ATTRIBUTES WHEN READING A FILE
-        for(int i = 0; i < jfile->num_attrs; i++) {
-
-            if(jfile->attrs[i]->id == FILESIZE_ATTR_ID) {
-                inode_type = FILE_TYPE;
-                filesize = *((BLOC_LOC*)jfile->attrs[i]->val);
-            }
-            else if(jfile->attrs[i]->id == DESTS_ATTR_ID) {
-                inode_type = DIR_TYPE;
-                dests = *( (char**)(jfile->attrs[i]->val) );
-            }
-            else if(jfile->attrs[i]->id == LINKS_TO_ATTR_ID) {
-                inode_type = SYMLINK_TYPE;
-                links_to = *( (char**)(jfile->attrs[i]->val) );
-            }
-
-        }
-    */
-
 ERR save_jfile(char* path, JFILE jfile,
                USER user, VCB vcb, RAID raid);
 /*  Policy:
