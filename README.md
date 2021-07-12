@@ -1,84 +1,43 @@
 # jFS
 
-Jacob's file system (jFS) is a file system library, CLI, and shell suite. It currently requires an OS-provided filesystem substrate, but a future operating system, jOS, will directly utilize jFS to store data on high throughput jDrives. This OS will be used to run jPhones, jPads, jMacs, and (of course) JavaScript.\*
+🛠️ NOTE: Only the core sections of the header library have been implemented. I planned too big for this project.
 
-**If you are a student grader please foreward this paragraph to Dr. Levine**
-Dr. Levine, this filesystem has all the bells and whistles for assignment 3: permissions, subdirectories, and go language implementation (+ personal additions: RAID mirrors, chains, and striping, corruption detection and correction, a static library, and operating system CLI intergration)!
+Jacob's file system (jFS) is a file system library and CLI suite. It currently requires an OS-provided filesystem substrate, but a future operating system, jOS, will directly utilize jFS to store data on high throughput jDrives. This OS will be used to run jPhones, jPads, jMacs, and (of course) JavaScript.\*
 
-``bash
-jfs example ... # TODO
-``
-
-## Getting Started
-
-I recommend installation options by their degree of awesomeness (# of 😎's)
-
-Please run all the following scripts from this project's root directory. These were all tested on Ubuntu 20.04.
-
-### Full System Installation  😎😎😎😎😎
-
-```bash
-sudo dev/install.sh --all
-```
-
-### Go Shell  😎😎😎😎
-
-```bash
-# install
-sudo dev/install.sh --shell_go
-jfs_shell_go
-
-# just build and run
-dev/compile_shell_go.sh
-./jfs_shell_go
-```
-
-### C Shell  😎😎😎
-
-```bash
-# install
-sudo dev/install.sh --shell_c
-jfs_shell_c
-
-# just build and run
-dev/compile_shell_c.sh
-./jfs_shell_c
-```
-
-### CLI  😎😎
-
-```bash
-# install
-sudo dev/install.sh --cli
-
-# just build and run
-dev/compile_cli.sh
-./jfs
-```
-
-### Just library  😎
-
-```bash
-# compile only:
-dev/compile_lib.sh
-```
+Please see below for installation instructions.
 
 ## Examples
-
-### Shell
-
-```
-TODO shell session
-```
 
 ### CLI
 
 ```bash
+jfs create \
+    NUM_BLOCKS=50000 \
+    BLOCK_SIZE=256 \
+    VOLUME_NAME=my_first_disk \
+    DISKS=disk0,disk1,disk2,disk3,disk4,disk5,disk6,disk7,disk8,disk9,diska,diskb,diskc,diskd,diske,diskf \
+    MIRRORS=1 \
+    CHAINS=4 \
+    STRIPED=true
 
-$ jfs create  # TODO CLI examples
+jfs combine \
+    NEWNAME=single_disk.jdf \
+    DISKS=disk0,disk1,disk2,disk3,disk4,disk5,disk6,disk7,disk8,disk9,diska,diskb,diskc,diskd,diske,diskf \
+    MIRRORS=1 \
+    CHAINS=4 \
+    STRIPED=true
 
-$ jfs 
+jfs mount \
+    DISKS=disk0,disk1,disk2,disk3,disk4,disk5,disk6,disk7,disk8,disk9,diska,diskb,diskc,diskd,diske,diskf \
+    MIRRORS=1 \
+    CHAINS=4 \
+    STRIPED=true
 
+jfs new_user student1
+
+jfs mkdir home USER=nobody
+
+jfs mkdir home/student1 USER=student1
 ```
 
 ```bash
@@ -110,7 +69,7 @@ file.txt
 
 ### Library
 
-The jfs library provides core functionality for the shell, CLI, and whatever awsome application you have in mind. Although core library functions explicitly return `error_t` codes, they may mutate arguments. (and some utility functions actually do return structs). Programmers linking jfs will want to include `lib/jfs.c` and may also want to make language-specific translations of the definitions in `lib/def.h`.
+The jfs library provides core functionality for the CLI ir whatever awsome application you have in mind. Although core library functions explicitly return `error_t` codes, they may mutate arguments. (and some utility functions actually do return structs). Programmers linking jfs will want to include `lib/jfs.c` and may also want to make language-specific translations of the definitions in `lib/def.h`.
 
 ```c
 // lib/jfs.h
@@ -386,6 +345,63 @@ These variables are used by the CLI. They may be passed as process / command lin
 | `chains` | `int` | `1` |  |
 | `striped` | `bool` | `false` |  |
 | `user` | `string` | `nobody` |  |
+
+
+## Getting Started
+
+🛠️ NOTE: Only the core sections of the header library have been implemented. I planned too big for this project.
+
+I recommend installation options by their degree of awesomeness (# of 😎's)
+
+Please run all the following scripts from this project's root directory.
+
+### Full System Installation  😎😎😎😎😎
+
+```bash
+sudo dev/install.sh --all  # ⚠️ not implemented
+```
+
+### Go Shell  😎😎😎😎
+
+```bash
+# install
+sudo dev/install.sh --shell_go  # ⚠️ not implemented
+jfs_shell_go
+
+# just build and run
+dev/compile_shell_go.sh  # ⚠️ not implemented
+./jfs_shell_go
+```
+
+### C Shell  😎😎😎
+
+```bash
+# install
+sudo dev/install.sh --shell_c  # ⚠️ not implemented
+jfs_shell_c
+
+# just build and run
+dev/compile_shell_c.sh  # ⚠️ not implemented
+./jfs_shell_c
+```
+
+### CLI  😎😎
+
+```bash
+# install
+sudo dev/install.sh --cli  # ⚠️ not implemented
+
+# just build and run
+dev/compile_cli.sh  # ⚠️ not implemented
+./jfs
+```
+
+### Just library  😎
+
+```bash
+# compile only:
+dev/compile_lib.sh  # ⚠️ build failing
+```
 
 
 \* References to a jOS, jShell, jScript, jVM, jPhone, jPad, jPod, jMac, ... are presented amusingly and do not imply any real intention to build a larger computer ecosystem.
