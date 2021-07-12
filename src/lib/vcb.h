@@ -2,6 +2,8 @@
 #define VCB_HEADER 1
 
 #include "def.h"
+#include "bits.h"
+#include "diskutils.h"
 
 
 VCB new_VCB();

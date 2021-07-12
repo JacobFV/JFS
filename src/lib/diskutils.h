@@ -3,6 +3,17 @@
 
 #include "def.h"
 
+
+ERR find_next_free_block(BLOC_LOC starting_block, int64_t bloc_size, 
+                         BLOC_LOC* next_free, RAID raid);
+/*  Finds next free block on raid (where valid bit = 0). 
+    Goes from starting_block to end and then restarts search
+    from after VCB definition until right before the start.
+    
+    Returns -1 and prints message if there are no free blocks.
+    Forewards -1 but does not print if any errors are encountered by subroutines
+    Otherwise silently returns 0 */
+
 ERR write_raid_bytes_raw(BYTE_LOC byte_loc, BYTE_LOC bytes_len, byte* bytes, RAID raid);
 /*  Writes raw bytes from `byte_loc` to `byte_loc+bytes_len` onto RAID
     using mirroring, chaining, and striping as indicated by raid.
@@ -41,16 +52,6 @@ ERR read_raid_block(BLOC_LOC bloc_loc, BLOC_DATA data, int64_t bloc_size,
     Does perform corruption detection and optionally correction
 
     Returns -1 and prints message if corruption is detected but fixcorrupt is false
-    Forewards -1 but does not print if any errors are encountered by subroutines
-    Otherwise silently returns 0 */
-
-ERR find_next_free_block(BLOC_LOC starting_block, int64_t bloc_size, 
-                         BLOC_LOC* next_free, RAID raid);
-/*  Finds next free block on raid (where valid bit = 0). 
-    Goes from starting_block to end and then restarts searche
-    from begining until right before the start.
-    
-    Returns -1 and prints message if there are no free blocks.
     Forewards -1 but does not print if any errors are encountered by subroutines
     Otherwise silently returns 0 */
 

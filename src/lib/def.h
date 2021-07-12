@@ -60,8 +60,6 @@ struct VCB_struct {
     BLOC_LOC total_inodes;
     INODE* master_inode_table;
     BLOC_LOC next_free_block;
-    int16_t num_reserved_chains;
-    BLOC_LOC** reserved_chain_starting_blocs;
     int8_t num_users;
     char** unames;
 };

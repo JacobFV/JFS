@@ -871,11 +871,6 @@ ERR volume_info(VCB vcb)
     printf("total_inodes:               %d", vcb->total_inodes);
     printf("...     (use `list recursive=true` to see all inodes)");
     printf("next_free_block:            %d", vcb->next_free_block);
-    printf("num_reserved_chains:        %d", vcb->num_reserved_chains);
-    for(int i = 0; i < vcb->num_reserved_chains; i++) {
-        printf("  reserved chain %d starts at %d", 
-               i, vcb->reserved_chain_starting_blocs[i]);
-    }
     printf("num_users:                  %d", vcb->num_users);
     for(int i = 0; i < vcb->num_users; i++) {
         printf("  uid: %d   uname: %s \n", i, vcb->unames[i]);

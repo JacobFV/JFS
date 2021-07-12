@@ -87,6 +87,7 @@ ERR create_inode_and_jfile(char* path, FILE* fp,
         2A. if is file: increment num_files 
         2B. if is dir: increment num_dirs 
         2C. if is symlink: increment num_symlinks
+        3. create new inode from this file and add to vcb
         
     Forewards -1 if any errors are encountered by subroutines
     Otherwise silently returns */
