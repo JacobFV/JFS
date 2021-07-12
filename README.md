@@ -1,3 +1,8 @@
+Jacob Valdez
+Dr. Levine
+CSE3320-001
+11 July 2021 23:39
+
 # jFS
 
 🛠️ NOTE: Only the core sections of the header library have been implemented. I planned too big for this project.
